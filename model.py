@@ -205,6 +205,57 @@ class DiscriminatorCGAN(nn.Module):
 
 
 # ==============================================================================
+# =                           models Projection CGAN                           =
+# ==============================================================================
+
+GeneratorPCGAN = GeneratorCGAN
+
+
+class DiscriminatorPCGAN(nn.Module):
+
+    def __init__(self, x_dim, c_dim, dim=96, norm='none', weight_norm='spectral_norm'):
+        super(DiscriminatorPCGAN, self).__init__()
+
+        norm_fn = _get_norm_fn_2d(norm)
+        weight_norm_fn = _get_weight_norm_fn(weight_norm)
+
+        def conv_norm_lrelu(in_dim, out_dim, kernel_size=3, stride=1, padding=1):
+            return nn.Sequential(
+                weight_norm_fn(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding)),
+                norm_fn(out_dim),
+                nn.LeakyReLU(0.2)
+            )
+
+        self.ls = nn.Sequential(  # (N, x_dim, 32, 32)
+            conv_norm_lrelu(x_dim, dim),
+            conv_norm_lrelu(dim, dim),
+            conv_norm_lrelu(dim, dim, stride=2),  # (N, dim , 16, 16)
+
+            conv_norm_lrelu(dim, dim * 2),
+            conv_norm_lrelu(dim * 2, dim * 2),
+            conv_norm_lrelu(dim * 2, dim * 2, stride=2),  # (N, dim*2, 8, 8)
+
+            conv_norm_lrelu(dim * 2, dim * 2, kernel_size=3, stride=1, padding=0),
+            conv_norm_lrelu(dim * 2, dim * 2, kernel_size=1, stride=1, padding=0),
+            conv_norm_lrelu(dim * 2, dim * 2, kernel_size=1, stride=1, padding=0),  # (N, dim*2, 6, 6)
+
+            nn.AvgPool2d(kernel_size=6),  # (N, dim*2, 1, 1)
+            torchlib.Reshape(-1, dim * 2),  # (N, dim*2)
+        )
+
+        self.l_logit = weight_norm_fn(nn.Linear(dim * 2, 1))  # (N, 1)
+        self.l_projection = weight_norm_fn(nn.Linear(dim * 2, c_dim))  # (N, c_dim)
+
+    def forward(self, x, c):
+        # x: (N, x_dim, 32, 32), c: (N, c_dim)
+        feat = self.ls(x)
+        logit = self.l_logit(feat)
+        embed = (self.l_projection(feat) * c).mean(1, keepdim=True)
+        logit += embed
+        return logit
+
+
+# ==============================================================================
 # =                                models ACGAN                                =
 # ==============================================================================
 

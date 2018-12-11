@@ -35,7 +35,7 @@ parser.add_argument('--loss_mode', dest='loss_mode', choices=['gan', 'lsgan', 'w
 parser.add_argument('--gp_mode', dest='gp_mode', choices=['none', 'dragan', 'wgan-gp'], default='none')
 parser.add_argument('--gp_coef', dest='gp_coef', type=float, default=1.0)
 parser.add_argument('--norm', dest='norm', choices=['none', 'batch_norm', 'instance_norm'], default='none')
-parser.add_argument('--weight_norm', dest='weight_norm', choices=['none', 'spectral_norm'], default='spectral_norm')
+parser.add_argument('--weight_norm', dest='weight_norm', choices=['none', 'spectral_norm', 'weight_norm'], default='spectral_norm')
 # others
 parser.add_argument('--experiment_name', dest='experiment_name', default='InfoGAN1_default')
 
