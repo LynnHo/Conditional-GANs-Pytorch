@@ -18,7 +18,7 @@ Pytorch implementation of several GANs with conditional signals (supervised or u
 CGAN                            | Projection CGAN                 | ACGAN
 :---:                           | :---:                           | :---:
 <img src="./pics/cgan.jpg">     | <img src="./pics/pcgan.jpg">    | <img src="./pics/acgan.jpg">
-InfoGAN1                        | **InfoGAN2**                    | **InfoGAN3**
+**InfoGAN1**                    | **InfoGAN2**                    | **InfoGAN3**
 <img src="./pics/infogan1.jpg"> | <img src="./pics/infogan2.jpg"> | <img src="./pics/infogan3.jpg">
 
 ## Usage
